@@ -6,7 +6,7 @@ screen = pygame.display.set_mode((resX, resY))
 clock = pygame.time.Clock()
 corrected = []
 
-sound_files = ["E2", "E2", "C2", "E2", "G2", "G", "C2", "G", "E", "A", "B", "A", "A", "G", "E2", "G2", "G2", "F2", "G2", "E2", "C2", "D2", "B"]
+sound_files = ["C", "D", "E", "F", "G", "A", "B", "C2", "D2", "E2", "F2", "G2", "F2", "E2", "D2", "C2", "B", "A", "G", "F", "E", "D", "C"]
 
 for name in sound_files:
     name = f"audio/{name}.wav"
@@ -51,6 +51,7 @@ class BouncyBall:
         self.next_sound_index = 0
         self.new_vel = 0.1
         self.trail = []
+        self.trail_length = 120
         self.circle_radius = resX / 2.1
         self.circle_centerX = resX / 2
         self.circle_centerY = resY / 2
@@ -58,6 +59,7 @@ class BouncyBall:
         self.speed = False
         self.grow = False
         self.circle_grow = False
+        self.trail_grow = False
 
     def get_color(self):
         elapsed_time = time.time() % 4.5
@@ -69,7 +71,7 @@ class BouncyBall:
         self.center[0] += self.velX
         self.center[1] += self.velY
         self.velY += self.new_vel
-        print(f"VELOCITY: {self.velY}\nRADIUS: {self.radius}")
+        print(f"VELOCITY: {self.velY}\nRADIUS: {self.radius}\nTRAIL: {self.trail_length}")
 
         distance_from_center = math.sqrt((self.center[0] - resX / 2) ** 2 + (self.center[1] - resY / 2) ** 2)
         if distance_from_center + self.radius > resX / 2.1:
@@ -87,6 +89,8 @@ class BouncyBall:
                 self.new_vel += 0.1
             if self.grow:
                 self.radius += 1.0
+            if self.trail_grow:
+                self.trail_length += 100.0
 
             pygame.draw.circle(surface=screen, color=(0, 255, 0), center=(self.circle_centerX, self.circle_centerY), radius=self.circle_radius, width=int((resX / 2.3) / 40))
 
@@ -97,7 +101,7 @@ class BouncyBall:
 
         color = self.get_color()
         self.trail.append((self.center[0], self.center[1], 255))
-        if len(self.trail) > 120:
+        if len(self.trail) > self.trail_length:
             self.trail.pop(0)
         
         for pos in self.trail:
@@ -139,7 +143,7 @@ if __name__ == "__main__":
         ball.speed = True
     if input("Grow every bounce? (Y/N): ").lower() == "y":
         ball.grow = True
-    if input("Circle grow every bounce? (Y/N): ").lower() == "y":
-        ball.circle_grow = True
+    if input("Trail grows every bounce? (Y/N): ").lower() == "y":
+        ball.trail_grow = True
 
     main()

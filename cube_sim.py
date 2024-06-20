@@ -4,35 +4,59 @@ pygame.init()
 resX, resY = 108 * 5, 192 * 5
 screen = pygame.display.set_mode((resX, resY))
 clock = pygame.time.Clock()
+corrected = []
+
+sound_files = ["C", "D", "E", "F", "G", "A", "B", "C2", "D2", "E2", "F2", "G2", "F2", "E2", "D2", "C2", "B", "A", "G", "F", "E", "D", "C"]
+
+for name in sound_files:
+    name = f"audio/{name}.wav"
+    corrected.append(name)
+
+sounds = [pygame.mixer.Sound(file) for file in corrected]
 
 class Cube():
     def __init__(self, surface, color, posX, posY, height, width, outline, velX, velY, center):
+        self.center = list(center)
         self.surface = surface
         self.color = color
-        self.rect = (posX, posY, width, height)
+        self.rect = pygame.Rect(posX, posY, width, height)
         self.outline = outline
         self.velX = velX
         self.velY = velY
-        self.center = list[center]
+        self.new_vel = 0.1
+        self.next_sound_index = 0
 
     def draw(self):
         self.center[0] += self.velX
         self.center[1] += self.velY
-        self.velY += self.new_vel
 
-        distance_from_center = math.sqrt((self.center[0] - resX / 2) ** 2 + (self.center[1] - resY / 2) ** 2)
-        if distance_from_center + self.radius > resX / 2.1:
-            angle = math.atan2(self.center[1] - resY / 2, self.center[0] - resX / 2)
-            normal = (math.cos(angle), math.sin(angle))
-            dot_product = self.velX * normal[0] + self.velY * normal[1]
-            self.velX -= 2 * dot_product * normal[0]
-            self.velY -= 2 * dot_product * normal[1]
+        collision_event = False
+        
+        if self.center[0] - self.rect.width / 2 < 0:
+            self.center[0] = self.rect.width / 2
+            self.velX *= -1
+            collision_event = True
+        elif self.center[0] + self.rect.width / 2 > resX:
+            self.center[0] = resX - self.rect.width / 2
+            self.velX *= -1
+            collision_event = True
+        if self.center[1] - self.rect.height / 2 < 0:
+            self.center[1] = self.rect.height / 2
+            self.velY *= -1
+            collision_event = True
+        elif self.center[1] + self.rect.height / 2 > resY:
+            self.center[1] = resY - self.rect.height / 2
+            self.velY *= -1
+            collision_event = True
 
-            overlap = (distance_from_center + self.radius - resX / 2.1)
-            self.center[0] -= overlap * normal[0]
-            self.center[1] -= overlap * normal[1]
+        if collision_event:
+            sounds[self.next_sound_index].play()
+            self.next_sound_index = (self.next_sound_index + 1) % len(sounds)
 
-Cube = Cube(surface=screen, color=(0, 0, 0), posX=0, posY=0, height=1, width=1, outline=0, velX=5, velY=5, center=(resX / 2, resY / 2))
+        self.rect.center = self.center
+        pygame.draw.rect(self.surface, self.color, self.rect, 0)
+
+cube = Cube(surface=screen, color=(0, 255, 0), posX=resX // 2, posY=resY // 2, height=50, width=50, outline=0, velX=5, velY=5, center=(resX // 2, resY // 2))
 
 def main():
     running = True
@@ -44,10 +68,11 @@ def main():
         screen.fill((0, 0, 0))
         pygame.draw.rect(surface=screen, color=(0, 255, 0), rect=(0, 0, resX, resY), width=5)
 
-        Cube.draw()
+        cube.draw()
 
         pygame.display.flip()
         clock.tick(60) 
     pygame.quit()
 
-main()
+if __name__ == "__main__":
+    main()
